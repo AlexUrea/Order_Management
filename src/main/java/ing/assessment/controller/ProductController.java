@@ -6,8 +6,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static ing.assessment.utils.GlobalConstants.Routes.PRODUCTS;
+import static ing.assessment.utils.GlobalConstants.Routes.PRODUCTS_BY_ID;
+
 @RestController
-@RequestMapping("/products")
+@RequestMapping(PRODUCTS)
 public class ProductController {
 
     private final ProductService productService;
@@ -21,7 +24,7 @@ public class ProductController {
         return productService.getAllProducts();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(PRODUCTS_BY_ID)
     public List<Product> getProduct(@PathVariable("id") Integer id) {
         return productService.getProductsById(id);
     }

@@ -1,7 +1,7 @@
 package ing.assessment.db.product;
 
 import ing.assessment.model.Location;
-import jakarta.persistence.*;
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
