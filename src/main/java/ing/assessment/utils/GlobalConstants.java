@@ -16,12 +16,16 @@ public class GlobalConstants {
     }
 
     public static final class Exceptions {
-        public static final String LOCATION_IS_NULL = "Location of the product must not be null";
-        public static final String PRICE_IS_NULL = "Price of the product must not be null";
-        public static final String QUANTITY_IS_NULL = "Quantity of the product must not be null";
+        public static final String LOCATION_IS_NULL = "Location of the product with id %s must not be null";
+        public static final String PRICE_IS_NULL = "Price of the product with id %s must not be null";
+        public static final String QUANTITY_IS_NULL = "Quantity of the orderProduct with productId %s must not be null";
         public static final String INSUFFICIENT_STOCK = """
                                            Insufficient stock for product with id %s.
                                            Available: %s, requested: %s.
                                            """;
+        public static final String PRODUCT_OUT_OF_STOCK = "Product with id %s out of stock in all locations";
+        public static final String ORDER_NOT_FOUND = "Order with id %s not found";
+        public static final String ORDER_ORDERPRODUCTS_NULL = "Order and OrderProducts cannot be null or empty";
+        public static final String PRODUCT_NOT_FOUND = "Product with id %s not found";
     }
 }

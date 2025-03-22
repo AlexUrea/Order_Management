@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, ProductCK> {
     List<Product> findByProductCk_Id(Integer id);
+
+    List<Product> findByProductCk(ProductCK productCk);
+
 }

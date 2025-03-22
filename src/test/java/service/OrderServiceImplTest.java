@@ -152,56 +152,56 @@ public class OrderServiceImplTest {
     }
 
     @Test
-    public void testValidateProductAvailability_valid() {
+    public void testProcessOrderProducts_valid() {
         ProductCK productCK = new ProductCK(1, Location.MUNICH);
         Product product = new Product(productCK, "Test Product", 100.0, 10);
         int requestedQuantity = 5;
 
-        assertDoesNotThrow(() -> orderService.validateProductAvailability(product, requestedQuantity));
+        assertDoesNotThrow(() -> orderService.processOrderProducts(product, requestedQuantity));
     }
 
     @Test
-    public void testValidateProductAvailability_quantityIsNull() {
+    public void testProcessOrderProducts_quantityIsNull() {
         ProductCK productCK = new ProductCK(1, Location.MUNICH);
         Product product = new Product(productCK, "Test Product", 100.0, null);
         int requestedQuantity = 5;
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> orderService.validateProductAvailability(product, requestedQuantity));
+                () -> orderService.processOrderProducts(product, requestedQuantity));
         assertEquals(QUANTITY_IS_NULL, ex.getMessage());
     }
 
     @Test
-    public void testValidateProductAvailability_insufficientStock() {
+    public void testProcessOrderProducts_insufficientStock() {
         int requestedQuantity = 5;
         ProductCK productCK = new ProductCK(1, Location.MUNICH);
         Product product = new Product(productCK, "Test Product", 100.0, 3);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> orderService.validateProductAvailability(product, requestedQuantity));
+                () -> orderService.processOrderProducts(product, requestedQuantity));
         String expectedMessage = String.format(INSUFFICIENT_STOCK, productCK.getId(), product.getQuantity(), requestedQuantity);
         assertEquals(expectedMessage, ex.getMessage());
     }
 
     @Test
-    public void testValidateProductAvailability_priceIsNull() {
+    public void testProcessOrderProducts_priceIsNull() {
         ProductCK productCK = new ProductCK(1, Location.MUNICH);
         Product product = new Product(productCK, "Test Product", null, 10);
         int requestedQuantity = 5;
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> orderService.validateProductAvailability(product, requestedQuantity));
+                () -> orderService.processOrderProducts(product, requestedQuantity));
         assertEquals(PRICE_IS_NULL, ex.getMessage());
     }
 
     @Test
-    public void testValidateProductAvailability_locationIsNull() {
+    public void testProcessOrderProducts_locationIsNull() {
         ProductCK productCK = new ProductCK(1, null);
         Product product = new Product(productCK, "Test Product", 100.0, 10);
         int requestedQuantity = 5;
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> orderService.validateProductAvailability(product, requestedQuantity));
+                () -> orderService.processOrderProducts(product, requestedQuantity));
         assertEquals(LOCATION_IS_NULL, ex.getMessage());
     }
 
