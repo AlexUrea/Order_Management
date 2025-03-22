@@ -6,6 +6,8 @@ public class GlobalConstants {
         public static final String PRODUCTS = "/products";
         public static final String ORDER_BY_ID = "/{id}";
         public static final String PRODUCTS_BY_ID = "/{id}";
+        public static final String AUTH = "/auth";
+        public static final String GENERATE = "/generate";
     }
 
     public static final class Costs {
