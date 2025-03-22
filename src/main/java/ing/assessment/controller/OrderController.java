@@ -1,5 +1,6 @@
 package ing.assessment.controller;
 
+import ing.assessment.db.dto.OrderDTO;
 import ing.assessment.db.order.Order;
 import ing.assessment.service.OrderService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,17 +25,17 @@ public class OrderController {
     }
 
     @PostMapping
-    public Order createOrder(@RequestBody Order order) {
-        return orderService.createOrder(order);
+    public OrderDTO createOrder(@RequestBody OrderDTO orderDto) {
+        return orderService.createOrder(orderDto);
     }
 
     @GetMapping
-    public List<Order> getAllOrders() {
+    public List<OrderDTO> getAllOrders() {
         return orderService.getAllOrders();
     }
 
     @GetMapping(ORDER_BY_ID)
-    public Order getOrder(@PathVariable("id") Integer id) {
+    public OrderDTO getOrder(@PathVariable("id") Integer id) {
         return orderService.getOrderById(id);
     }
 }

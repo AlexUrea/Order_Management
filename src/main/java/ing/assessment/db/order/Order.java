@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
+import static ing.assessment.utils.GlobalConstants.Costs.DEFAULT_COST_OF_DELIVERY;
+import static ing.assessment.utils.GlobalConstants.Costs.DEFAULT_DELIVERY_TIME;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -28,6 +31,6 @@ public class Order {
     @ElementCollection
     private List<OrderProduct> orderProducts;
     private Double orderCost;
-    private Integer deliveryCost = 30; // Default cost of the order
-    private Integer deliveryTime = 2;  // Default delivery time for the order
+    private Integer deliveryCost = DEFAULT_COST_OF_DELIVERY;
+    private Integer deliveryTime = DEFAULT_DELIVERY_TIME;
 }

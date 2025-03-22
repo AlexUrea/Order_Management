@@ -3,6 +3,8 @@ package ing.assessment.service.impl;
 import ing.assessment.db.order.CostAndLocations;
 import ing.assessment.db.order.Order;
 import ing.assessment.db.order.OrderProduct;
+import ing.assessment.db.dto.OrderDTO;
+import ing.assessment.db.dto.OrderProductDTO;
 import ing.assessment.db.product.Product;
 import ing.assessment.db.repository.OrderRepository;
 import ing.assessment.exceptions.InsufficientStockException;
@@ -22,7 +24,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static ing.assessment.utils.GlobalConstants.Costs.DEFAULT_COST_OF_DELIVERY;
+import static ing.assessment.utils.GlobalConstants.Costs.DEFAULT_DELIVERY_TIME;
 import static ing.assessment.utils.GlobalConstants.Costs.DISCOUNT_10;
 import static ing.assessment.utils.GlobalConstants.Costs.FREE_DELIVERY;
 import static ing.assessment.utils.GlobalConstants.Costs.ORDER_COST_1000;
@@ -49,25 +54,29 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> getAllOrders() {
+    public List<OrderDTO> getAllOrders() {
         LOG.info("Returning all orders");
-        return orderRepository.findAll();
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     @Override
-    public Order getOrderById(int id) {
+    public OrderDTO getOrderById(int id) {
         LOG.info("Returning order with id {}", id);
-        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(String.format(ORDER_NOT_FOUND, id)));
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(String.format(ORDER_NOT_FOUND, id)));
+        return convertToDto(order);
     }
 
     @Override
     @Transactional
-    public Order createOrder(Order order) {
-        if (order == null || order.getOrderProducts() == null || order.getOrderProducts().isEmpty()) {
+    public OrderDTO createOrder(OrderDTO orderDto) {
+        if (orderDto == null || orderDto.getOrderProducts() == null || orderDto.getOrderProducts().isEmpty()) {
             throw new IllegalArgumentException(ORDER_ORDERPRODUCTS_NULL);
         }
+        Order order = convertToEntity(orderDto);
         List<OrderProduct> orderProducts = order.getOrderProducts();
-        LOG.info("Creating order with id {} and products {}", order.getId(), orderProducts);
+        LOG.info("Creating order with products {}", orderProducts);
 
         CostAndLocations orderCostAndLocations = processOrderProducts(orderProducts);
         LOG.info("orderCostAndLocations: {} after processOrderProducts", orderCostAndLocations);
@@ -81,7 +90,9 @@ public class OrderServiceImpl implements OrderService {
         //timestamp set in UTC to avoid confusion. Consumers are free to format the date as they need
         order.setTimestamp(Date.from(Instant.now()));
 
-        LOG.info("Order with id {} created at {}", order.getId(), LocalDateTime.now());        return orderRepository.save(order);
+        LOG.info("Order with id {} created at {}", order.getId(), LocalDateTime.now());
+        Order savedOrder = orderRepository.save(order);
+        return convertToDto(savedOrder);
     }
 
     /**
@@ -97,7 +108,7 @@ public class OrderServiceImpl implements OrderService {
                 throw new IllegalArgumentException(String.format(QUANTITY_IS_NULL, orderProduct.getProductId()));
             }
             Integer requestedQuantity = orderProduct.getQuantity();
-            List<Product> products = productService.getProductsById(orderProduct.getProductId());
+            List<Product> products = productService.getProductEntitiesById(orderProduct.getProductId());
             if (products.isEmpty()) {
                 throw new IllegalArgumentException(String.format(PRODUCT_NOT_FOUND, orderProduct.getProductId()));
             }
@@ -112,7 +123,6 @@ public class OrderServiceImpl implements OrderService {
 
             adjustProductQuantities(requestedQuantity, products);
         }
-
         return new CostAndLocations(orderCost, totalLocations);
     }
 
@@ -156,7 +166,6 @@ public class OrderServiceImpl implements OrderService {
 
     public void adjustProductQuantities(Integer requestedQuantity, List<Product> products) {
         int remainingQuantity = requestedQuantity;
-
         for (Product product : products) {
             if (remainingQuantity <= 0) {
                 break;
@@ -192,11 +201,40 @@ public class OrderServiceImpl implements OrderService {
 
     public void calculateDeliveryTime(Order order, int locations) {
         if (locations == 1) {
-            LOG.info("For order with id {} delivery time is {}", order.getId(), order.getDeliveryTime());
+            LOG.info("For order with id {} delivery time is 2", order.getId());
             return;
         }
         int deliveryTime = locations * 2;
         LOG.info("For order with id {} delivery time is {}", order.getId(), deliveryTime);
         order.setDeliveryTime(deliveryTime);
+    }
+
+    private OrderDTO convertToDto(Order order) {
+        OrderDTO dto = new OrderDTO();
+        dto.setId(order.getId());
+        dto.setTimestamp(order.getTimestamp());
+        dto.setOrderCost(order.getOrderCost());
+        dto.setDeliveryCost(order.getDeliveryCost());
+        dto.setDeliveryTime(order.getDeliveryTime());
+        if (order.getOrderProducts() != null) {
+            List<OrderProductDTO> orderProductDTOs = order.getOrderProducts().stream()
+                    .map(op -> new OrderProductDTO(op.getProductId(), op.getQuantity()))
+                    .collect(Collectors.toList());
+            dto.setOrderProducts(orderProductDTOs);
+        }
+        return dto;
+    }
+
+    private Order convertToEntity(OrderDTO dto) {
+        Order order = new Order();
+        order.setDeliveryCost(DEFAULT_COST_OF_DELIVERY);
+        order.setDeliveryTime(DEFAULT_DELIVERY_TIME);
+        if (dto.getOrderProducts() != null) {
+            List<OrderProduct> orderProducts = dto.getOrderProducts().stream()
+                    .map(opDto -> new OrderProduct(opDto.getProductId(), opDto.getQuantity()))
+                    .collect(Collectors.toList());
+            order.setOrderProducts(orderProducts);
+        }
+        return order;
     }
 }

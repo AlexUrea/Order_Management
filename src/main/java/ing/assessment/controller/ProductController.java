@@ -1,5 +1,6 @@
 package ing.assessment.controller;
 
+import ing.assessment.db.dto.ProductDTO;
 import ing.assessment.db.product.Product;
 import ing.assessment.service.ProductService;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,12 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
+    public List<ProductDTO> getAllProducts() {
         return productService.getAllProducts();
     }
 
     @GetMapping(PRODUCTS_BY_ID)
-    public List<Product> getProduct(@PathVariable("id") Integer id) {
+    public List<ProductDTO> getProduct(@PathVariable("id") Integer id) {
         return productService.getProductsById(id);
     }
 }

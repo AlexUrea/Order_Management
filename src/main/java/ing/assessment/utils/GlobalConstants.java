@@ -13,6 +13,8 @@ public class GlobalConstants {
         public static final double DISCOUNT_10 = 0.9;
         public static final int ORDER_COST_500 = 500;
         public static final int ORDER_COST_1000 = 1000;
+        public static final int DEFAULT_DELIVERY_TIME = 2;
+        public static final int DEFAULT_COST_OF_DELIVERY = 30;
     }
 
     public static final class Exceptions {
