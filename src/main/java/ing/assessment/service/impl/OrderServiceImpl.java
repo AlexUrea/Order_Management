@@ -90,14 +90,14 @@ public class OrderServiceImpl implements OrderService {
         //timestamp set in UTC to avoid confusion. Consumers are free to format the date as they need
         order.setTimestamp(Date.from(Instant.now()));
 
-        LOG.info("Order with id {} created at {}", order.getId(), LocalDateTime.now());
+        LOG.info("Order created at {}", LocalDateTime.now());
         Order savedOrder = orderRepository.save(order);
         return convertToDto(savedOrder);
     }
 
     /**
      * Processes the order products by validating stock and location availability, decreasing product quantities,
-     * calculating the total order cost, and collecting product locations.
+     * calculating the total order cost before discounts, and collecting product locations.
      */
     public CostAndLocations processOrderProducts(List<OrderProduct> orderProducts) {
         int totalLocations = 0;
@@ -128,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * Validates that the product has enough stock for the requested quantity,
-     * as well as a valid location and price
+     * as well as valid location and price and returns orderCost and orderLocations
      */
     public CostAndLocations validateProductAvailability(List<Product> products, Integer requestedQuantity, Double price) {
         Set<Location> locations = new HashSet<>();
@@ -182,32 +182,32 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    public void calculateDiscountsAndDeliveryCost(Order order, double orderCost) {
-        if (orderCost <= ORDER_COST_500) {
-            LOG.info("For order with id {} and orderCost {} no discount", order.getId(), orderCost);
+        public void calculateDiscountsAndDeliveryCost(Order order, double orderCost) {
+            if (orderCost <= ORDER_COST_500) {
+                LOG.info("For orderCost {} no discount is applied", orderCost);
+                order.setOrderCost(orderCost);
+                return;
+            }
+            if (orderCost > ORDER_COST_1000) {
+                LOG.info("For orderCost {} free delivery and 10% discount", orderCost);
+                order.setOrderCost(orderCost * DISCOUNT_10);
+                order.setDeliveryCost(FREE_DELIVERY);
+                return;
+            }
+            LOG.info("For orderCost {} free delivery and no discount", orderCost);
             order.setOrderCost(orderCost);
-            return;
-        }
-        if (orderCost > ORDER_COST_1000) {
-            LOG.info("For order with id {} and orderCost {} free delivery and 10% discount", order.getId(), orderCost);
-            order.setOrderCost(orderCost * DISCOUNT_10); // 10% discount
             order.setDeliveryCost(FREE_DELIVERY);
-            return;
         }
-        LOG.info("For order with id {} and orderCost {} free delivery and no discount", order.getId(), orderCost);
-        order.setOrderCost(orderCost);
-        order.setDeliveryCost(FREE_DELIVERY);
-    }
 
-    public void calculateDeliveryTime(Order order, int locations) {
-        if (locations == 1) {
-            LOG.info("For order with id {} delivery time is 2", order.getId());
-            return;
+        public void calculateDeliveryTime(Order order, int locations) {
+            if (locations == 1) {
+                LOG.info("For order with 1 location delivery time is 2");
+                return;
+            }
+            int deliveryTime = locations * 2;
+            LOG.info("For order with {} locations delivery time is {}", locations, deliveryTime);
+            order.setDeliveryTime(deliveryTime);
         }
-        int deliveryTime = locations * 2;
-        LOG.info("For order with id {} delivery time is {}", order.getId(), deliveryTime);
-        order.setDeliveryTime(deliveryTime);
-    }
 
     private OrderDTO convertToDto(Order order) {
         OrderDTO dto = new OrderDTO();
