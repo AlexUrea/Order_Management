@@ -1,6 +1,7 @@
 package ing.assessment.exceptions;
 
-public class ProductOutOfStock extends RuntimeException {
+public final class ProductOutOfStock extends BusinessException {
+
     public ProductOutOfStock(String message) {
         super(message);
     }

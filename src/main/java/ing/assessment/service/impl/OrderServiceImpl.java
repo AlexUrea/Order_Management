@@ -72,6 +72,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDTO createOrder(OrderDTO orderDto) {
         if (orderDto == null || orderDto.getOrderProducts() == null || orderDto.getOrderProducts().isEmpty()) {
+            LOG.error(ORDER_ORDERPRODUCTS_NULL);
             throw new IllegalArgumentException(ORDER_ORDERPRODUCTS_NULL);
         }
         Order order = convertToEntity(orderDto);
@@ -105,11 +106,13 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderProduct orderProduct : orderProducts) {
             if (orderProduct.getQuantity() == null) {
+                LOG.error(String.format(QUANTITY_IS_NULL, orderProduct.getProductId()));
                 throw new IllegalArgumentException(String.format(QUANTITY_IS_NULL, orderProduct.getProductId()));
             }
             Integer requestedQuantity = orderProduct.getQuantity();
             List<Product> products = productService.getProductEntitiesById(orderProduct.getProductId());
             if (products.isEmpty()) {
+                LOG.error(String.format(PRODUCT_NOT_FOUND, orderProduct.getProductId()));
                 throw new IllegalArgumentException(String.format(PRODUCT_NOT_FOUND, orderProduct.getProductId()));
             }
 
@@ -141,12 +144,14 @@ public class OrderServiceImpl implements OrderService {
             productQuantity += product.getQuantity();
 
             if (product.getProductCk().getLocation() == null) {
+                LOG.error(String.format(LOCATION_IS_NULL, product.getProductCk().getId()));
                 throw new IllegalArgumentException(String.format(LOCATION_IS_NULL, product.getProductCk().getId()));
             }
             locations.add(product.getProductCk().getLocation());
 
             if (productQuantity >= requestedQuantity) {
                 if (product.getPrice() == null) {
+                    LOG.error(String.format(PRICE_IS_NULL, product.getProductCk().getId()));
                     throw new IllegalArgumentException(String.format(PRICE_IS_NULL, product.getProductCk().getId()));
                 }
                 Double orderCost = price * requestedQuantity;
@@ -155,8 +160,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (productQuantity == 0) {
+            LOG.warn(String.format(PRODUCT_OUT_OF_STOCK, products.get(0).getProductCk().getId()));
             throw new ProductOutOfStock(String.format(PRODUCT_OUT_OF_STOCK, products.get(0).getProductCk().getId()));
         }
+
+        LOG.warn(String.format(INSUFFICIENT_STOCK, products.get(0).getProductCk().getId(),
+                productQuantity, requestedQuantity));
         throw new InsufficientStockException(String.format(
                 INSUFFICIENT_STOCK,
                 products.get(0).getProductCk().getId(),

@@ -24,7 +24,7 @@ which you can check by running SELECT * FROM PRODUCT in /h2-console.
 
 Also, for easier testing you can find unit tests for OrderService as well as
 a complete Postman Collection along with variables.
-You can find the postman collection at src/test/postman
+You can find the postman collection at root/postman_collection
 
 Few notes regarding the business logic:
 - for orders > 500 ron, free delivery
@@ -36,5 +36,13 @@ Few notes regarding the business logic:
 - a product is going to be delivered from the first location until it's stock is depleted.
 Then, the next location is going to be used for delivery until it is also depleted,
 and so on.
+
+Possible improvements/optimizations:
+- Prevent race conditions/concurrent modifications;
+- Improve logs to display a Correlation-id generated from the start of a request using a filter, 
+this way the logs are much more helpful, as they can be followed through all the steps of a request 
+in the absence of another id;
+- Separate layer for the DTO - completely decouple controller and service through an object mapper service 
+that converts objects to DTOs and the other way around.
 
 
